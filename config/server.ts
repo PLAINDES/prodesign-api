@@ -47,15 +47,19 @@ class Server {
 	}
 
 	middlewares() {
-		//CORS
-		this.app.use(Cors);
-		//lectura del body
-		this.app.use(express.json());
+	// CORS
+	this.app.use(Cors);
 
-		//carpeta publica
-		this.app.use(express.static("public"));
-		this.app.use(cookieParser());
-	}
+	// ✅ PRE-FLIGHT GLOBAL
+	this.app.options("*", Cors);
+
+	// Body parser
+	this.app.use(express.json());
+
+	this.app.use(cookieParser());
+	this.app.use(express.static("public"));
+}
+
 
 	routes() {
 		this.app.use("/api/v1/auth", authRoutes);

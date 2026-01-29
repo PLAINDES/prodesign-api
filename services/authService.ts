@@ -7,6 +7,7 @@ import {
 	checkAuthMaster,
 	execLoginSSO,
 	execLogoutSSO,
+	decodeJWT,
 } from "../utils";
 import {
 	Planes,
@@ -138,23 +139,19 @@ export const registerUserService = async (req: Request, res: Response) => {
 	});
 };
 
-export const revalidarTokenService = async (
-	req: Request
-): Promise<IResponseApi> => {
+export const revalidarTokenService = async (req: Request) => {
 	const { id } = req.body;
 
-	// @ts-ignore
 	const usuario = await User.findOne({
-		// @ts-ignore
-		where: { id: id },
+		where: { id },
 	});
 
 	return {
-		msg: "usuario correcto",
-		data: usuario,
-		error: null,
+		usuario,
 	};
 };
+
+
 
 // export const verifySSOService = async (req: Request, res: Response) => {
 // 	const { success, data, message } = await execVerifySSO(req.body);

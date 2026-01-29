@@ -17,3 +17,24 @@ export const generateJWT = (id: number, secretkey: string) => {
 		})
 	})
 }
+
+export interface DecodedJWT {
+	id: number;
+	iat: number;
+	exp: number;
+}
+
+export const decodeJWT = (
+	token: string,
+	secretkey: string
+): Promise<DecodedJWT> => {
+	return new Promise((resolve, reject) => {
+		jwt.verify(token, secretkey, (error, decoded) => {
+			if (error) {
+				reject(new Error("Token inválido o expirado"));
+			}
+
+			resolve(decoded as DecodedJWT);
+		});
+	});
+};

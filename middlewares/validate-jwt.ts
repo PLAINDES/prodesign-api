@@ -1,29 +1,34 @@
-import { Request, Response,NextFunction } from "express";
-import jwt from 'jsonwebtoken';
-import { Constantes } from '../config/Constante';
+import { Request, Response, NextFunction } from "express";
+import { Constantes } from "../config/Constante";
+import { decodeJWT } from "../utils";
 
+export const validateJWT = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const authHeader = req.header("authorization");
 
+		if (!authHeader) {
+			return res.status(401).json({
+				ok: false,
+				msg: "No existe el token",
+			});
+		}
 
-export const validateJWT = (req: Request, res: Response, next: NextFunction) => {
-        const token = req.header('x-token')
+		const token = authHeader.split(" ")[1]; // Bearer TOKEN
 
-        if (!token) return res.status(401).json({
-            ok: false,
-            msg: 'No existe el token'
-        });
+		const decoded = await decodeJWT(token, Constantes.key);
 
-        try {
-            const payload: any = jwt.verify(token, Constantes.key);
+		// 👉 Inyectamos el id para el siguiente handler
+		req.body.id = decoded.id;
 
-            req.body.id = payload.id
-
-        } catch (error) {
-            console.log(error)
-            return res.status(401).json({
-                ok: false,
-                msg: 'Token no valido'
-            });
-        }
-
-        next();
-}
+		next();
+	} catch (error) {
+		return res.status(401).json({
+			ok: false,
+			msg: "Token inválido o expirado",
+		});
+	}
+};

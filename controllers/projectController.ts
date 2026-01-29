@@ -77,8 +77,8 @@ export const getProjectByID = async (req: Request, res: Response) => {
 		projectJSON = "Salio error";
 	}
 
-	console.log("aforo:", project?.aforo);
-	console.log("project:", project?.toJSON());
+	// console.log("aforo:", project?.aforo);
+	// console.log("project:", project?.toJSON());
 
 	res.json({
 		msg: "Sucesss1!",
