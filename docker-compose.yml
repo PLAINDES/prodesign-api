@@ -1,0 +1,15 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vite-app-service
+    ports:
+      - "8000:80"
+    restart: always
+    networks:
+      - prosupervision_network
+
+networks:
+  prosupervision_network:
+    driver: bridge
