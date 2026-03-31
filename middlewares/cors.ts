@@ -7,6 +7,10 @@ export const Cors = cors({
 		"https://prodesign.pro-invest.pe",
 		"https://apiprodesign.pro-invest.pe",
 		"http://localhost:8000",
+		"http://192.168.18.200:8000",
+		"http://192.168.18.200:5199",
+		"http://3.142.156.141:8000",
+		"http://3.142.156.141:5199"
 	],
 	credentials: true,
 	methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],

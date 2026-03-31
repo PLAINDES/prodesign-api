@@ -1,15 +1,23 @@
 services:
-  frontend:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: vite-app-service
+    container_name: prodesign-backend
     ports:
       - "8000:80"
     restart: always
+    # 1. Indicamos que este contenedor depende de la base de datos
+    
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - DB_NAME=db_arquitectura
     networks:
       - prosupervision_network
 
 networks:
   prosupervision_network:
-    driver: bridge
+    external: true
