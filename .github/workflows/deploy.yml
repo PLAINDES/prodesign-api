@@ -57,10 +57,10 @@ jobs:
             echo "Deteniendo contenedores anteriores..."
             docker compose -p prodesign-backend down
             docker rm -f prodesign-backend 2>/dev/null || true
-            echo "Liberando puerto 8000..."
+            echo "Liberando puertos 8000 y 8005..."
             for c in $(docker ps -q); do
-              if docker port "$c" 2>/dev/null | grep -q "8000"; then
-                echo "Matando contenedor $c que usa puerto 8000..."
+              if docker port "$c" 2>/dev/null | grep -qE "800[05]"; then
+                echo "Matando contenedor $c..."
                 docker kill "$c"
                 docker rm -f "$c"
               fi
