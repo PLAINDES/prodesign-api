@@ -3,6 +3,7 @@ import cors from "cors";
 export const Cors = cors({
 	origin: [
 		"http://localhost:5199",
+		"http://localhost:5173",
 		"http://26.228.61.122:8000",
 		"https://prodesign.pro-invest.pe",
 		"https://apiprodesign.pro-invest.pe",
