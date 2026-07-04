@@ -57,6 +57,8 @@ jobs:
             echo "Deteniendo contenedores anteriores..."
             docker compose -p prodesign-backend down
             docker rm -f prodesign-backend 2>/dev/null || true
+            echo "Liberando puerto 8000..."
+            fuser -k 8000/tcp 2>/dev/null || true
 
             echo "Construyendo imágenes SIN CACHÉ..."
             docker compose -p prodesign-backend build --no-cache
