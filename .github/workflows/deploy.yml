@@ -58,7 +58,14 @@ jobs:
             docker compose -p prodesign-backend down
             docker rm -f prodesign-backend 2>/dev/null || true
             echo "Liberando puerto 8000..."
-            fuser -k 8000/tcp 2>/dev/null || true
+            for c in $(docker ps -q); do
+              if docker port "$c" 2>/dev/null | grep -q "8000"; then
+                echo "Matando contenedor $c que usa puerto 8000..."
+                docker kill "$c"
+                docker rm -f "$c"
+              fi
+            done
+            sleep 2
 
             echo "Construyendo imágenes SIN CACHÉ..."
             docker compose -p prodesign-backend build --no-cache
