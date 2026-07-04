@@ -6,7 +6,7 @@ import {
 	putProject,
 	getProjectsByUserID,
 	getProjectByID,
-	test,
+	getProjectForProBudgets,
 	createThumbnail,
 	getProjectsCosts,
 	updateProjectCosts,
@@ -38,7 +38,7 @@ router.put("/:id", errPipe(putProject));
 router.delete("/:id", errPipe(deleteProject));
 router.get("/:id", errPipe(getProjectsByUserID));
 router.get("/id/:id", errPipe(getProjectByID));
-router.get("/test/dataRet", errPipe(test));
+router.get("/probudgets/:id", errPipe(getProjectForProBudgets));
 router.post(
 	"/thumbnail/:id",
 	upload.single("thumbnail"),

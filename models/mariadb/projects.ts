@@ -47,6 +47,8 @@ class Project extends Model<
 	declare vertices_rectangle: string;
 	declare angle: number;
 	declare number_floors: string;
+	declare provincia: string;
+	declare departamento: string;
 
 	declare createdAt: Date;
 	declare updatedAt: Date;
@@ -164,6 +166,12 @@ Project.init(
 			type: DataTypes.STRING,
 		},
 		number_floors: {
+			type: DataTypes.STRING,
+		},
+		provincia: {
+			type: DataTypes.STRING,
+		},
+		departamento: {
 			type: DataTypes.STRING,
 		},
 		createdAt: DataTypes.DATE,
