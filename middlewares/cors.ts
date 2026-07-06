@@ -7,6 +7,9 @@ export const Cors = cors({
 		"http://26.228.61.122:8000",
 		"https://prodesign.pro-invest.pe",
 		"https://apiprodesign.pro-invest.pe",
+		// [DOCUMENTACIÓN] Se agregaron los orígenes de ProBudgets para evitar bloqueos por CORS en las llamadas de cliente
+		"https://probudget.pro-invest.pe",
+		"https://apiprobudget.pro-invest.pe",
 		"http://localhost:8000",
 		"http://192.168.18.200:8000",
 		"http://192.168.18.200:5199",
