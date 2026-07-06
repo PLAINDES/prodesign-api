@@ -39,6 +39,8 @@ class Project extends Model<
 	declare distrito: string;
 	declare puntos: string;
 	declare ambientes: string;
+	// [DOCUMENTACIÓN] Se declaró la propiedad resumen_ambientes para recuperar el diseño generado desde la base de datos
+	declare resumen_ambientes: string;
 	declare aforo: string;
 	declare build_data: string;
 	declare toilets_per_student: string;
@@ -143,6 +145,10 @@ Project.init(
 		},
 		ambientes: {
 			type: DataTypes.JSON,
+		},
+		// [DOCUMENTACIÓN] Se agregó la definición de la columna resumen_ambientes en la inicialización del modelo
+		resumen_ambientes: {
+			type: DataTypes.TEXT,
 		},
 		aforo: {
 			type: DataTypes.TEXT,
