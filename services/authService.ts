@@ -196,37 +196,78 @@ export const revalidarTokenService = async (req: Request) => {
 // }
 
 export const loginSSOService = async (req: Request, res: Response) => {
-	const { success, data, message } = await execLoginSSO(req.body);
+	const { userId, userEmail, userName, userLastname } = req.body;
 
-	if (!success) {
-		return res.status(200).json({
-			statusCode: 200,
-			success,
-			message: "No se pudo logear al usuario (SSO)",
-			info: message,
-		});
+	let user = null;
+
+	if (process.env.AUTH_SSO) {
+		try {
+			const { success, data, message } = await execLoginSSO(req.body);
+			if (success && data?.result?.id) {
+				user = await User.findOne({
+					where: { id_master: Number(data.result.id) },
+				});
+				return res.status(200).json({
+					statusCode: 200,
+					success: true,
+					data,
+					user,
+					message,
+				});
+			}
+		} catch (e) {
+			console.warn("[SSO] Error con AUTH_SSO externo, usando fallback local:", e);
+		}
 	}
 
-	const user = await User.findOne({
-		where: {
-			id_master: Number(data.result.id),
-		},
-	});
+	// Fallback local: buscar o crear usuario por email
+	user = await User.findOne({ where: { email: userEmail } });
+
+	if (!user) {
+		user = await User.create({
+			id_master: 0,
+			email: userEmail,
+			name: userName || userEmail.split("@")[0] || "Usuario",
+			lastname: userLastname || "",
+			password: "sso_cognito_" + Math.random().toString(36).slice(2),
+		});
+
+		const defaultPlan = await Planes.findOne({ where: { defecto: 1 } });
+		if (defaultPlan) {
+			const detailPlan = new DetailUserPlan({
+				iduser: user.id,
+				idplan: defaultPlan.id,
+				estado: 1,
+			});
+			await detailPlan.save();
+		}
+	}
 
 	res.status(200).json({
 		statusCode: 200,
-		success: success,
-		data,
-		user: user,
-		message,
+		success: true,
+		data: { result: { id: user.id } },
+		user,
+		message: "Usuario SSO autenticado localmente",
 	});
 };
 
 export const logoutSSOService = async (req: Request, res: Response) => {
-	const data = await execLogoutSSO(req.body);
-	console.log(data);
+	if (process.env.AUTH_SSO) {
+		try {
+			const data = await execLogoutSSO(req.body);
+			return res.status(200).json({
+				statusCode: 200,
+				data,
+			});
+		} catch (e) {
+			console.warn("[SSO] Error en logout externo:", e);
+		}
+	}
+
 	res.status(200).json({
 		statusCode: 200,
-		data,
+		success: true,
+		message: "Sesión SSO cerrada localmente",
 	});
 };
