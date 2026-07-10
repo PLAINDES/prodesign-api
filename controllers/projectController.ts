@@ -434,6 +434,46 @@ export const getProjectForProBudgets = async (req: Request, res: Response) => {
 };
 // ===== FIN PROBUDGETS =====
 
+export const syncToProBudgets = async (req: Request, res: Response) => {
+	const probudgetsApiUrl = process.env.VITE_URL_PROBUDGETS || "https://apiprobudget.pro-invest.pe";
+	const endpoint = `${probudgetsApiUrl}/v1/integracion/sync`;
+	const token = process.env.VITE_PROBUDGETS_TOKEN || "";
+
+	try {
+		const response = await fetch(endpoint, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${token}`,
+			},
+			body: JSON.stringify(req.body),
+		});
+
+		const body = await response.text();
+		const contentType = response.headers.get("content-type") || "";
+
+		if (!response.ok) {
+			res.status(response.status).json({
+				error: `ProBudgets respondió con status ${response.status}`,
+				detail: body.slice(0, 500),
+			});
+			return;
+		}
+
+		if (contentType.includes("application/json")) {
+			res.status(200).json(JSON.parse(body));
+		} else {
+			res.status(200).json({ status: "success", raw: body });
+		}
+	} catch (error: any) {
+		console.error("[syncToProBudgets] Error:", error);
+		res.status(502).json({
+			error: "Error al conectar con ProBudgets",
+			detail: error.message,
+		});
+	}
+};
+
 export const getProjectsCosts = async (req: Request, res: Response) => {
 	const id = Number(req.params.id);
 	const { costsCategories, calculatedCosts } = await getProjectsCostsService(id);

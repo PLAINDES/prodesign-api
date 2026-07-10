@@ -7,6 +7,7 @@ import {
 	getProjectsByUserID,
 	getProjectByID,
 	getProjectForProBudgets,
+	syncToProBudgets,
 	createThumbnail,
 	getProjectsCosts,
 	updateProjectCosts,
@@ -43,6 +44,7 @@ router.get("/probudgets", errPipe(getProjectForProBudgets));
 router.get("/probudgets/:id", errPipe(getProjectForProBudgets));
 router.post("/probudgets", errPipe(getProjectForProBudgets));
 router.post("/probudgets/:id", errPipe(getProjectForProBudgets));
+router.post("/probudgets/sync-proxy", errPipe(syncToProBudgets));
 router.post(
 	"/thumbnail/:id",
 	upload.single("thumbnail"),
