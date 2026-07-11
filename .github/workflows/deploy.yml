@@ -30,7 +30,7 @@ jobs:
             logs/,
             .env,
 
-      - name: Desplegar con Docker Compose
+      - name: Ejecutar migraciones Umzug + Desplegar con Docker Compose
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
@@ -53,6 +53,10 @@ jobs:
 
             echo "Validando docker-compose..."
             docker compose config > /dev/null
+
+            echo "Ejecutando migraciones Umzug..."
+            # Usar contenedor temporal para correr migraciones
+            docker compose -p prodesign-backend run --rm backend npm run migrate:up
 
             echo "Deteniendo contenedores anteriores..."
             docker compose -p prodesign-backend down
