@@ -207,6 +207,27 @@ export const loginSSOService = async (req: Request, res: Response) => {
 				user = await User.findOne({
 					where: { id_master: Number(data.result.id) },
 				});
+
+				if (!user) {
+					user = await User.create({
+						id_master: Number(data.result.id),
+						email: userEmail,
+						name: userName || (userEmail && userEmail.split("@")[0]) || "Usuario",
+						lastname: userLastname || "",
+						password: "sso_cognito_" + Math.random().toString(36).slice(2),
+					});
+
+					const defaultPlan = await Planes.findOne({ where: { defecto: 1 } });
+					if (defaultPlan) {
+						const detailPlan = new DetailUserPlan({
+							iduser: user.id,
+							idplan: defaultPlan.id,
+							estado: 1,
+						});
+						await detailPlan.save();
+					}
+				}
+
 				return res.status(200).json({
 					statusCode: 200,
 					success: true,
