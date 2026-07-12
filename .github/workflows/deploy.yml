@@ -25,10 +25,10 @@ jobs:
           EXCLUDE: >
             /.git/,
             /.github/,
-            node_modules/,
-            dist/,
-            logs/,
-            .env,
+            /node_modules/,
+            /dist/,
+            /logs/,
+            /.env,
 
       - name: Build + Migraciones Umzug + Deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -36,6 +36,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: DB_HOST,DB_PORT,DB_USER,DB_PASSWORD,DB_NAME
           script: |
             set -e
 
@@ -57,8 +58,14 @@ jobs:
             echo "Construyendo imágenes NUEVAS (con migrate.ts compilado)..."
             docker compose -p prodesign-backend build --no-cache
 
-            echo "Ejecutando migraciones Umzug en imagen NUEVA..."
-            docker compose -p prodesign-backend run --rm backend npm run migrate:up
+            echo "Ejecutando migraciones Umzug en imagen NUEVA con variables de BD..."
+            docker compose -p prodesign-backend run --rm \
+              -e DB_HOST=${DB_HOST} \
+              -e DB_PORT=${DB_PORT} \
+              -e DB_USER=${DB_USER} \
+              -e DB_PASSWORD=${DB_PASSWORD} \
+              -e DB_NAME=${DB_NAME} \
+              backend npm run migrate:up
 
             echo "Deteniendo contenedores anteriores..."
             docker compose -p prodesign-backend down
