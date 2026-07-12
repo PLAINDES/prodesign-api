@@ -30,7 +30,7 @@ jobs:
             logs/,
             .env,
 
-      - name: Ejecutar migraciones Umzug + Desplegar con Docker Compose
+      - name: Build + Migraciones Umzug + Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
@@ -54,8 +54,10 @@ jobs:
             echo "Validando docker-compose..."
             docker compose config > /dev/null
 
-            echo "Ejecutando migraciones Umzug..."
-            # Usar contenedor temporal para correr migraciones
+            echo "Construyendo imágenes NUEVAS (con migrate.ts compilado)..."
+            docker compose -p prodesign-backend build --no-cache
+
+            echo "Ejecutando migraciones Umzug en imagen NUEVA..."
             docker compose -p prodesign-backend run --rm backend npm run migrate:up
 
             echo "Deteniendo contenedores anteriores..."
@@ -71,10 +73,7 @@ jobs:
             done
             sleep 2
 
-            echo "Construyendo imágenes SIN CACHÉ..."
-            docker compose -p prodesign-backend build --no-cache
-
-            echo "Levantando contenedores..."
+            echo "Levantando contenedores con imagen NUEVA..."
             docker compose -p prodesign-backend up -d --force-recreate
 
             echo "Limpiando imágenes residuales..."
