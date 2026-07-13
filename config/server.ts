@@ -51,7 +51,7 @@ class Server {
 	this.app.use(Cors);
 
 	// ✅ PRE-FLIGHT GLOBAL
-	this.app.options("(.*)", Cors);
+	this.app.options(/.*/, Cors)
 
 	// Body parser
 	this.app.use(express.json());
