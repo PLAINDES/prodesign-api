@@ -1,6 +1,6 @@
 import { Sequelize, Options } from "sequelize";
 
-dotenv.config();
+require("dotenv").config();
 
 const dbname: string = process.env.DB_NAME || "";
 const username: string = process.env.DB_USER || "";
