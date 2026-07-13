@@ -23,7 +23,7 @@ jobs:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           SOURCE: "./"
           TARGET: "/home/ftpceon/ftp/prodesign/prodesign-api/"
-          ARGS: "-rlgoDzvc -i --delete"
+          ARGS: "-rlgoDzvc -i --delete --exclude='.env'"
           EXCLUDE: "/.git/,/.github/,/node_modules/,/dist/,/logs/,/.env"
 
       - name: Build + Deploy
