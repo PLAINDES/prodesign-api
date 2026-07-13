@@ -1,5 +1,7 @@
 import { Sequelize, Options } from "sequelize";
 
+dotenv.config();
+
 const dbname: string = process.env.DB_NAME || "";
 const username: string = process.env.DB_USER || "";
 const password: string = process.env.DB_PASS || "";
