@@ -37,63 +37,69 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: DB_HOST,DB_PORT,DB_USER,DB_PASSWORD,DB_NAME
-          script: |
-            set -e
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+        script: |
+          set -e
 
-            cd /home/ftpceon/ftp/prodesign/prodesign-api/
+          cd /home/ftpceon/ftp/prodesign/prodesign-api/
 
-            echo "========================================="
-            echo "Archivos sincronizados:"
-            ls -la
-            echo "========================================="
+          echo "========================================="
+          echo "Archivos sincronizados:"
+          ls -la
+          echo "========================================="
 
-            echo "Copiando .env si existe..."
-            if [ -f .env ]; then
-              echo ".env ya existe"
+          echo "Copiando .env si existe..."
+          if [ -f .env ]; then
+            echo ".env ya existe"
+          fi
+
+          echo "Validando docker-compose..."
+          docker compose config > /dev/null
+
+          echo "Construyendo imágenes NUEVAS (con migrate.ts compilado)..."
+          docker compose -p prodesign-backend build --no-cache
+
+          echo "Ejecutando migraciones Umzug en imagen NUEVA con variables de BD..."
+          # La BD está en contenedor mariadb_prodesign en red externa prosupervision_network
+          # Corremos migración en un contenedor que se una a esa red
+          docker run --rm \
+            --network prosupervision_network \
+            -e DB_HOST=mariadb_prodesign \
+            -e DB_PORT \
+            -e DB_USER \
+            -e DB_PASSWORD \
+            -e DB_NAME \
+            prodesign-backend-backend npm run migrate:up
+
+          echo "Deteniendo contenedores anteriores..."
+          docker compose -p prodesign-backend down
+          docker rm -f prodesign-backend 2>/dev/null || true
+          echo "Liberando puertos 8000 y 8005..."
+          for c in $(docker ps -q); do
+            if docker port "$c" 2>/dev/null | grep -qE "800[05]"; then
+              echo "Matando contenedor $c..."
+              docker kill "$c"
+              docker rm -f "$c"
             fi
+          done
+          sleep 2
 
-            echo "Validando docker-compose..."
-            docker compose config > /dev/null
+          echo "Levantando contenedores con imagen NUEVA..."
+          docker compose -p prodesign-backend up -d --force-recreate
 
-            echo "Construyendo imágenes NUEVAS (con migrate.ts compilado)..."
-            docker compose -p prodesign-backend build --no-cache
+          echo "Limpiando imágenes residuales..."
+          docker image prune -f
+          echo "Limpiando caché de construcción acumulada por el --no-cache..."
+          docker builder prune -f
 
-            echo "Ejecutando migraciones Umzug en imagen NUEVA con variables de BD..."
-                        # La BD está en contenedor mariadb_prodesign en red externa prosupervision_network
-                        # Corremos migración en un contenedor que se una a esa red
-                        docker run --rm \
-                          --network prosupervision_network \
-                          -e DB_HOST=mariadb_prodesign \
-                          -e DB_PORT \
-                          -e DB_USER \
-                          -e DB_PASSWORD \
-                          -e DB_NAME \
-                          prodesign-backend-backend npm run migrate:up
-
-            echo "Deteniendo contenedores anteriores..."
-            docker compose -p prodesign-backend down
-            docker rm -f prodesign-backend 2>/dev/null || true
-            echo "Liberando puertos 8000 y 8005..."
-            for c in $(docker ps -q); do
-              if docker port "$c" 2>/dev/null | grep -qE "800[05]"; then
-                echo "Matando contenedor $c..."
-                docker kill "$c"
-                docker rm -f "$c"
-              fi
-            done
-            sleep 2
-
-            echo "Levantando contenedores con imagen NUEVA..."
-            docker compose -p prodesign-backend up -d --force-recreate
-
-            echo "Limpiando imágenes residuales..."
-            docker image prune -f
-            echo "Limpiando caché de construcción acumulada por el --no-cache..."
-            docker builder prune -f
-            
-            echo "========================================="
-            echo "Estado final:"
-            docker compose -p prodesign-backend ps
-            echo "Logs recientes:"
-            docker compose -p prodesign-backend logs --tail=20
-            echo "========================================="
+          echo "========================================="
+          echo "Estado final:"
+          docker compose -p prodesign-backend ps
+          echo "Logs recientes:"
+          docker compose -p prodesign-backend logs --tail=20
+          echo "========================================="
