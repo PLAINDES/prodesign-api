@@ -1,3 +1,5 @@
+# [DOCUMENTACIÓN] Modificación 2026-07-13: Se corrigió la indentación del bloque 'script' colocándolo dentro de 'with' en la acción appleboy/ssh-action.
+# Se limpió el listado 'EXCLUDE' eliminando comas adicionales y se reestableció el paso de ejecución de migraciones mediante 'docker compose exec'.
 name: Deploy PRODESIGN API
 
 on:
@@ -15,20 +17,14 @@ jobs:
 
       - name: Sincronizar archivos al servidor
         uses: easingthemes/ssh-deploy@main
-        env:
+        with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ secrets.SERVER_IP }}
           REMOTE_USER: ${{ secrets.SSH_USER }}
           SOURCE: "./"
           TARGET: "/home/ftpceon/ftp/prodesign/prodesign-api/"
           ARGS: "-rlgoDzvc -i --delete"
-          EXCLUDE: >
-            /.git/,
-            /.github/,
-            /node_modules/,
-            /dist/,
-            /logs/,
-            /.env,
+          EXCLUDE: "/.git/,/.github/,/node_modules/,/dist/,/logs/,/.env"
 
       - name: Build + Deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -36,46 +32,49 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          set -e
+          script: |
+            set -e
 
-          cd /home/ftpceon/ftp/prodesign/prodesign-api/
+            cd /home/ftpceon/ftp/prodesign/prodesign-api/
 
-          echo "========================================="
-          echo "Archivos sincronizados:"
-          ls -la
-          echo "========================================="
+            echo "========================================="
+            echo "Archivos sincronizados:"
+            ls -la
+            echo "========================================="
 
-          echo "Validando docker-compose..."
-          docker compose config > /dev/null
+            echo "Validando docker-compose..."
+            docker compose config > /dev/null
 
-          echo "Construyendo imagen NUEVA..."
-          docker compose -p prodesign-backend build --no-cache
+            echo "Construyendo imagen NUEVA..."
+            docker compose -p prodesign-backend build --no-cache
 
-          echo "Deteniendo contenedores anteriores..."
-          docker compose -p prodesign-backend down
-          docker rm -f prodesign-backend 2>/dev/null || true
-          echo "Liberando puertos 8000 y 8005..."
-          for c in $(docker ps -q); do
-            if docker port "$c" 2>/dev/null | grep -qE "800[05]"; then
-              echo "Matando contenedor $c..."
-              docker kill "$c"
-              docker rm -f "$c"
-            fi
-          done
-          sleep 2
+            echo "Deteniendo contenedores anteriores..."
+            docker compose -p prodesign-backend down
+            docker rm -f prodesign-backend 2>/dev/null || true
+            echo "Liberando puertos 8000 y 8005..."
+            for c in $(docker ps -q); do
+              if docker port "$c" 2>/dev/null | grep -qE "800[05]"; then
+                echo "Matando contenedor $c..."
+                docker kill "$c"
+                docker rm -f "$c"
+              fi
+            done
+            sleep 2
 
-          echo "Levantando contenedor con imagen NUEVA..."
-          docker compose -p prodesign-backend up -d --force-recreate
+            echo "Levantando contenedor con imagen NUEVA..."
+            docker compose -p prodesign-backend up -d --force-recreate
 
-          echo "Limpiando imágenes residuales..."
-          docker image prune -f
-          echo "Limpiando caché de construcción..."
-          docker builder prune -f
+            echo "Ejecutando migraciones de base de datos..."
+            docker compose -p prodesign-backend exec -T backend npm run migrate:up
 
-          echo "========================================="
-          echo "Estado final:"
-          docker compose -p prodesign-backend ps
-          echo "Logs recientes:"
-          docker compose -p prodesign-backend logs --tail=20
-          echo "========================================="
+            echo "Limpiando imágenes residuales..."
+            docker image prune -f
+            echo "Limpiando caché de construcción..."
+            docker builder prune -f
+
+            echo "========================================="
+            echo "Estado final:"
+            docker compose -p prodesign-backend ps
+            echo "Logs recientes:"
+            docker compose -p prodesign-backend logs --tail=20
+            echo "========================================="

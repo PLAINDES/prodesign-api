@@ -10,9 +10,11 @@ services:
     # 1. Indicamos que este contenedor depende de la base de datos
     
     environment:
+      # [DOCUMENTACIÓN] Se agregó la variable DB_PASS para que los controladores dbMySQL y dbMariaDb puedan leer la contraseña de base de datos de manera correcta.
       - DB_HOST=mariadb_prodesign
       - DB_PORT=3306
       - DB_USER=root
+      - DB_PASS=rootpassword
       - DB_PASSWORD=rootpassword
       - DB_NAME=db_arquitectura
     networks:
