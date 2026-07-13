@@ -30,19 +30,12 @@ jobs:
             /logs/,
             /.env,
 
-      - name: Build + Migraciones Umzug + Deploy
+      - name: Build + Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DB_HOST,DB_PORT,DB_USER,DB_PASSWORD,DB_NAME
-        env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
         script: |
           set -e
 
@@ -53,18 +46,11 @@ jobs:
           ls -la
           echo "========================================="
 
-          echo "Copiando .env si existe..."
-          if [ -f .env ]; then
-            echo ".env ya existe"
-          fi
-
           echo "Validando docker-compose..."
           docker compose config > /dev/null
 
-          echo "Construyendo imágenes NUEVAS..."
-                      docker compose -p prodesign-backend build --no-cache
-
-                      echo "Saltando migraciones (deploy sin migrate)..."
+          echo "Construyendo imagen NUEVA..."
+          docker compose -p prodesign-backend build --no-cache
 
           echo "Deteniendo contenedores anteriores..."
           docker compose -p prodesign-backend down
@@ -79,12 +65,12 @@ jobs:
           done
           sleep 2
 
-          echo "Levantando contenedores con imagen NUEVA..."
+          echo "Levantando contenedor con imagen NUEVA..."
           docker compose -p prodesign-backend up -d --force-recreate
 
           echo "Limpiando imágenes residuales..."
           docker image prune -f
-          echo "Limpiando caché de construcción acumulada por el --no-cache..."
+          echo "Limpiando caché de construcción..."
           docker builder prune -f
 
           echo "========================================="
