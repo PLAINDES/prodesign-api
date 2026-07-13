@@ -9,7 +9,13 @@ import mariaDB from "../config/dbMySQL";
 export const umzug = new Umzug({
   migrations: { glob: "migrations/*.ts", resolve: ({ name, path, context }) => {
     const migration = require(path);
-    return { name, up: () => migration.up(context, mariaDB.getQueryInterface()), down: () => migration.down(context, mariaDB.getQueryInterface()) };
+	return { 
+	  name, 
+	  // Enviamos un objeto { context } en lugar del context suelto
+	  up: () => migration.up({ context }), 
+	  down: () => migration.down({ context }) 
+	};
+    //return { name, up: () => migration.up(context, mariaDB.getQueryInterface()), down: () => migration.down(context, mariaDB.getQueryInterface()) };
   }},
   context: mariaDB.getQueryInterface(),
   storage: new SequelizeStorage({ sequelize: mariaDB }),
