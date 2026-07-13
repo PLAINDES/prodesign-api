@@ -61,20 +61,10 @@ jobs:
           echo "Validando docker-compose..."
           docker compose config > /dev/null
 
-          echo "Construyendo imágenes NUEVAS (con migrate.ts compilado)..."
-          docker compose -p prodesign-backend build --no-cache
+          echo "Construyendo imágenes NUEVAS..."
+                      docker compose -p prodesign-backend build --no-cache
 
-          echo "Ejecutando migraciones Umzug en imagen NUEVA con variables de BD..."
-          # La BD está en contenedor mariadb_prodesign en red externa prosupervision_network
-          # Corremos migración en un contenedor que se una a esa red
-          docker run --rm \
-            --network prosupervision_network \
-            -e DB_HOST=mariadb_prodesign \
-            -e DB_PORT \
-            -e DB_USER \
-            -e DB_PASSWORD \
-            -e DB_NAME \
-            prodesign-backend-backend npm run migrate:up
+                      echo "Saltando migraciones (deploy sin migrate)..."
 
           echo "Deteniendo contenedores anteriores..."
           docker compose -p prodesign-backend down
