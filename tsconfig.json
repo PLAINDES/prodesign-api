@@ -3,6 +3,7 @@
     "files": true
   },
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"],
+	"include": ["**/*.ts", "migrations/**/*.ts"]
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
