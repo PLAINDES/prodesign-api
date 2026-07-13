@@ -59,13 +59,16 @@ jobs:
             docker compose -p prodesign-backend build --no-cache
 
             echo "Ejecutando migraciones Umzug en imagen NUEVA con variables de BD..."
-            docker compose -p prodesign-backend run --rm \
-              -e DB_HOST=${DB_HOST} \
-              -e DB_PORT=${DB_PORT} \
-              -e DB_USER=${DB_USER} \
-              -e DB_PASSWORD=${DB_PASSWORD} \
-              -e DB_NAME=${DB_NAME} \
-              backend npm run migrate:up
+                        # La BD está en contenedor mariadb_prodesign en red externa prosupervision_network
+                        # Corremos migración en un contenedor que se una a esa red
+                        docker run --rm \
+                          --network prosupervision_network \
+                          -e DB_HOST=mariadb_prodesign \
+                          -e DB_PORT=${DB_PORT} \
+                          -e DB_USER=${DB_USER} \
+                          -e DB_PASSWORD=${DB_PASSWORD} \
+                          -e DB_NAME=${DB_NAME} \
+                          prodesign-backend_backend npm run migrate:up
 
             echo "Deteniendo contenedores anteriores..."
             docker compose -p prodesign-backend down
