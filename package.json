@@ -10,7 +10,7 @@
     "build": "tsc --project .",
     "dev": "nodemon app.ts",
     "prod": "node dist/app.js",
-    "migrate:up": "node dist/config/migrate.js up",
+    "migrate:up": "node -r ts-node/register dist/config/migrate.js up",
     "migrate:down": "node dist/config/migrate.js down"
   },
   "repository": {
